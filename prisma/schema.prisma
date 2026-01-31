@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id       Int     @id @default(autoincrement())
+  name     String?
+  email    String  @unique
+  password String
+
+  urls Url[]
+
+  groups GroupMembers[]
+}
+
+enum UrlAccess {
+  PUBLIC
+  PRIVATE
+  GROUP
+}
+
+model Url {
+  id           Int       @id @default(autoincrement())
+  fullUrl      String
+  shortenedUrl String    @unique
+  access       UrlAccess @default(PUBLIC)
+
+  owner User   @relation(fields: [ownerId], references: [id])
+  group Group? @relation(fields: [groupId], references: [id])
+
+  ownerId Int
+  groupId Int?
+
+  @@index([shortenedUrl])
+}
+
+model Group {
+  id   Int    @id @default(autoincrement())
+  name String
+
+  members GroupMembers[]
+  urls    Url[]
+}
+
+enum MemberStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum GroupRole {
+  OWNER
+  MEMBER
+  ADMIN
+}
+
+model GroupMembers {
+  id     Int   @id @default(autoincrement())
+  group  Group @relation(fields: [groupId], references: [id])
+  member User  @relation(fields: [memberId], references: [id])
+
+  groupId  Int
+  memberId Int
+
+  role   GroupRole     @default(MEMBER)
+  status MemberStatus  @default(PENDING)
+
+  @@unique([groupId, memberId])
+}
