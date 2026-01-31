@@ -76,4 +76,14 @@ export class GroupService {
       },
     });
   }
+
+  async createJoinRequest(userId: number, groupId: number) {
+    await this.prisma.groupMembers.create({
+      data: {
+        groupId,
+        memberId: userId,
+        status: MemberStatus.PENDING,
+      },
+    });
+  }
 }
