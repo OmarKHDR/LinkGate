@@ -86,4 +86,30 @@ export class GroupService {
       },
     });
   }
+
+  async getGroupMembershipContext(groupId: number, userId: number) {
+    const member = await this.prisma.groupMembers.findUnique({
+      where: {
+        groupId_memberId: {
+          groupId,
+          memberId: userId,
+        },
+      },
+      select: {
+        role: true,
+        status: true,
+        member: {
+          select: {
+            name: true,
+          },
+        },
+        group: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+    return member;
+  }
 }
