@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
-import { CompanyModule } from './company/company.module';
+import { GroupModule } from './group/group.module';
 import { UrlModule } from './url/url.module';
 import { UserModule } from './user/user.module';
 import { PrismaModule } from './prisma/prisma.module';
-import { GroupModule } from './group/group.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [CompanyModule, UrlModule, UserModule, PrismaModule, GroupModule],
+  imports: [UrlModule, UserModule, PrismaModule, GroupModule, AuthModule],
   controllers: [],
   providers: [],
 })

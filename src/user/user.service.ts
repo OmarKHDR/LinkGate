@@ -2,10 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { User, Prisma } from 'src/generated/prisma/client.js';
 import { hashPassword, verifyPassword } from 'src/utils/hashing';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {
+  constructor(
+    private prisma: PrismaService,
+    private jwtService: JwtService,
+  ) {
     if (!prisma.user) {
       throw new Error('PrismaService not properly initialized');
     }
@@ -15,7 +19,7 @@ export class UserService {
     return user;
   }
 
-  async getUser(selector: Prisma.UserWhereUniqueInput): Promise<User | null> {
+  async getUser(selector: Prisma.UserWhereUniqueInput) {
     const user: User | null = await this.prisma.user.findUnique({
       where: selector,
     });
@@ -47,12 +51,14 @@ export class UserService {
     return members;
   }
 
-  async createUser(user: Prisma.UserCreateInput): Promise<User> {
+  async createUser(user: Prisma.UserCreateInput): Promise<string | null> {
     user.password = hashPassword(user.password);
     const createdUser: User = await this.prisma.user.create({
       data: user,
     });
-    return createdUser;
+    const payload = { sub: createdUser.id, name: createdUser.name };
+    const jwt = await this.jwtService.signAsync(payload);
+    return jwt;
   }
 
   async validateUser(
@@ -65,5 +71,13 @@ export class UserService {
       return isCorrectPassword;
     }
     return false;
+  }
+
+  async deleteUser(user: Prisma.UserWhereUniqueInput) {
+    return await this.prisma.user.delete({
+      where: {
+        ...user,
+      },
+    });
   }
 }

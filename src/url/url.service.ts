@@ -1,8 +1,13 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  RequestTimeoutException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Url, UrlAccess, Prisma } from 'src/generated/prisma/client';
-import { CreateUrlDto } from './dto/creart-url.dto';
 import { generateShortId } from 'src/utils/shortener';
+import { UrlMetaDto, CreateUrlDto, UrlFullDataDto } from './dto/url.dto';
 
 @Injectable()
 export class UrlService {
@@ -16,8 +21,9 @@ export class UrlService {
     });
     return urls;
   }
-  async getFullUrl(shortUrl: string, userId: number): Promise<string | null> {
-    const fullUrl = await this.prisma.url.findFirst({
+
+  async getFullUrl(shortUrl: string, userId: number): Promise<UrlFullDataDto> {
+    const fullUrl = await this.prisma.url.findUnique({
       where: {
         shortenedUrl: shortUrl,
         OR: [
@@ -36,9 +42,40 @@ export class UrlService {
           },
         ],
       },
+      select: {
+        id: true,
+        shortenedUrl: true,
+        fullUrl: true,
+        access: true,
+        ownerId: true,
+        groupId: true,
+        owner: {
+          select: {
+            name: true,
+          },
+        },
+      },
     });
-    if (!fullUrl) return null;
-    return fullUrl.fullUrl;
+    if (!fullUrl) throw new NotFoundException('url not found');
+    return fullUrl;
+  }
+
+  async getGroupUrls(groupId: number) {
+    const urls: UrlMetaDto[] = await this.prisma.url.findMany({
+      where: {
+        groupId,
+      },
+      select: {
+        shortenedUrl: true,
+        access: true,
+        owner: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    });
+    return urls;
   }
 
   async createShortUrl(url: CreateUrlDto, ownerId: number): Promise<Url> {
@@ -66,6 +103,6 @@ export class UrlService {
         }
       }
     }
-    throw new Error('Failed to generate unique short url');
+    throw new RequestTimeoutException('Failed to generate unique short url');
   }
 }

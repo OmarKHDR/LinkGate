@@ -1,15 +1,22 @@
-/* eslint-disable @typescript-eslint/require-await */
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Post, Body, Req, Delete } from '@nestjs/common';
+import { UserService } from './user.service';
+import type { Request } from 'express';
+import { UserCreateDto } from './dto/user.create.dto';
 
-@Controller('user')
+@Controller('users')
 export class UserController {
+  constructor(private userService: UserService) {}
+
   @Get('')
-  async getUsers(): Promise<Array<string>> {
-    return [];
+  async getUser(@Req() req: Request) {
+    return await this.userService.getUser({ id: req.user.id });
   }
 
-  @Get(':url')
-  async getUrl(): Promise<string> {
-    return '';
+  @Post('')
+  async createUser(@Body() user: UserCreateDto) {
+    return this.userService.createUser(user);
   }
+
+  @Delete('')
+  async deleteUser() {}
 }
