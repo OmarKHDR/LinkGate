@@ -23,10 +23,11 @@ export class GroupService {
     return group;
   }
 
-  async getAllGroups(): Promise<Group[]> {
-    const groups = await this.prisma.group.findMany({});
-    return groups;
-  }
+  // closed for more privacy for now, a user should only see his own groups
+  // async getAllGroups(): Promise<Group[]> {
+  //   const groups = await this.prisma.group.findMany({});
+  //   return groups;
+  // }
 
   async getUserGroups(userId: number): Promise<Group[]> {
     const groups = await this.prisma.group.findMany({
