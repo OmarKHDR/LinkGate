@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Group, GroupRole, MemberStatus } from 'src/generated/prisma/client';
+import { Group, GroupRole, MemberStatus } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateGroupDto } from './dto/create-group.dto';
 

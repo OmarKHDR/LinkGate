@@ -1,5 +1,5 @@
 import { IsNumber, IsString, IsEnum, IsOptional } from 'class-validator';
-import { UrlAccess } from 'src/generated/prisma/client';
+import { UrlAccess } from '@prisma/client';
 
 export class CreateUrlDto {
   @IsString()

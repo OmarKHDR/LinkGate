@@ -5,7 +5,7 @@ import {
   RequestTimeoutException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Url, UrlAccess, Prisma } from 'src/generated/prisma/client';
+import { Url, UrlAccess, Prisma } from '@prisma/client';
 import { generateShortId } from 'src/utils/shortener';
 import { UrlMetaDto, CreateUrlDto, UrlFullDataDto } from './dto/url.dto';
 

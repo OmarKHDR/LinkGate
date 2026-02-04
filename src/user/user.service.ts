@@ -1,14 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { User, Prisma } from 'src/generated/prisma/client.js';
+import { User, Prisma } from '@prisma/client';
 import { hashPassword, verifyPassword } from 'src/utils/hashing';
-import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class UserService {
   constructor(
     private prisma: PrismaService,
-    private jwtService: JwtService,
   ) {
     if (!prisma.user) {
       throw new Error('PrismaService not properly initialized');
@@ -51,14 +49,18 @@ export class UserService {
     return members;
   }
 
-  async createUser(user: Prisma.UserCreateInput): Promise<string | null> {
-    user.password = hashPassword(user.password);
+  async createUser(user: Prisma.UserCreateInput) {
+    user.password = await hashPassword(user.password);
+    console.log(user.password);
     const createdUser: User = await this.prisma.user.create({
       data: user,
     });
-    const payload = { sub: createdUser.id, name: createdUser.name };
-    const jwt = await this.jwtService.signAsync(payload);
-    return jwt;
+    const payload = {
+      id: createdUser.id,
+      name: createdUser.name,
+      email: createdUser.email,
+    };
+    return payload;
   }
 
   async validateUser(
@@ -67,7 +69,7 @@ export class UserService {
   ): Promise<boolean> {
     const user: User | null = await this.getUser(selector);
     if (user !== null) {
-      const isCorrectPassword = verifyPassword(password, user.password);
+      const isCorrectPassword = await verifyPassword(password, user.password);
       return isCorrectPassword;
     }
     return false;

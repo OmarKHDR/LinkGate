@@ -3,7 +3,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 import bcrypt from 'bcrypt';
 
-export const hashPassword = (plain: string): string => bcrypt.hash(plain, 10);
+export const hashPassword = async (plain: string): Promise<string> => {
+  return await bcrypt.hash(plain, 10);
+};
 
-export const verifyPassword = (plain: string, hash: string): boolean =>
-  bcrypt.compare(plain, hash);
+export const verifyPassword = async (
+  plain: string,
+  hash: string,
+): Promise<boolean> => {
+  return await bcrypt.compare(plain, hash);
+};
