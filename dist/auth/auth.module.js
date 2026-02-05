@@ -7,6 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthModule = void 0;
+require("dotenv/config");
 const common_1 = require("@nestjs/common");
 const auth_service_1 = require("./auth.service");
 const user_module_1 = require("../user/user.module");
@@ -22,7 +23,7 @@ exports.AuthModule = AuthModule = __decorate([
             user_module_1.UserModule,
             jwt_1.JwtModule.register({
                 global: true,
-                secret: 'helloworldis$2b$04$zetTTD.1R8OBkhNEtWcvB.irPtMjsQ.LPohtL0XSkr5eMl1ey0IcW',
+                secret: process.env.jwtSecret,
                 signOptions: { expiresIn: '15m' },
             }),
             prisma_module_1.PrismaModule,

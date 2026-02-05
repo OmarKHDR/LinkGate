@@ -3,7 +3,12 @@ import { UserService } from 'src/user/user.service';
 import { UserAuthDto } from 'src/user/dto/user.auth.dto';
 import { JwtService } from '@nestjs/jwt';
 import { verifyPassword } from 'src/utils/hashing';
-import { Jwt, JwtPayload } from 'src/shared/types/jwt';
+import {
+  Jwt,
+  AccessPayload,
+  RefreshPayload,
+  StringValue,
+} from 'src/shared/types/jwt';
 
 @Injectable()
 export class AuthService {
@@ -16,16 +21,42 @@ export class AuthService {
     const u = await this.userService.getUser({ email: user.email });
     if (!u) throw new UnauthorizedException('Invalid credentials');
     if (await verifyPassword(user.password, u.password)) {
-      const payload = {
+      const accessPayload = {
         sub: u.id,
         name: u.name,
       };
-      return await this.signData(payload);
+      const refreshPayload = {
+        sub: u.id,
+      };
+      return {
+        accessToken: await this.signData(accessPayload, '15m'),
+        refreshToken: await this.signData(refreshPayload, '1w'),
+      };
     } else throw new UnauthorizedException('Invalid credentials');
   }
 
-  async signData(payload: JwtPayload) {
-    const jwt = await this.jwtService.signAsync({ payload });
+  async signUserById(userId: number) {
+    const u = await this.userService.getUser({ id: userId });
+    if (!u) throw new UnauthorizedException('Invalid credentials');
+    const accessPayload = {
+      sub: u.id,
+      name: u.name,
+    };
+    return {
+      accessToken: await this.signData(accessPayload, '15m'),
+    };
+  }
+
+  async signData(
+    payload: AccessPayload | RefreshPayload,
+    expiresIn: StringValue,
+  ) {
+    const jwt = await this.jwtService.signAsync(
+      { payload },
+      {
+        expiresIn: expiresIn ?? '15m',
+      },
+    );
     return jwt;
   }
 

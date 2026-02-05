@@ -26,17 +26,37 @@ let AuthService = class AuthService {
         if (!u)
             throw new common_1.UnauthorizedException('Invalid credentials');
         if (await (0, hashing_1.verifyPassword)(user.password, u.password)) {
-            const payload = {
+            const accessPayload = {
                 sub: u.id,
                 name: u.name,
             };
-            return await this.signData(payload);
+            const refreshPayload = {
+                sub: u.id,
+            };
+            return {
+                accessToken: await this.signData(accessPayload, '15m'),
+                refreshToken: await this.signData(refreshPayload, '1w'),
+            };
         }
         else
             throw new common_1.UnauthorizedException('Invalid credentials');
     }
-    async signData(payload) {
-        const jwt = await this.jwtService.signAsync({ payload });
+    async signUserById(userId) {
+        const u = await this.userService.getUser({ id: userId });
+        if (!u)
+            throw new common_1.UnauthorizedException('Invalid credentials');
+        const accessPayload = {
+            sub: u.id,
+            name: u.name,
+        };
+        return {
+            accessToken: await this.signData(accessPayload, '15m'),
+        };
+    }
+    async signData(payload, expiresIn) {
+        const jwt = await this.jwtService.signAsync({ payload }, {
+            expiresIn: expiresIn ?? '15m',
+        });
         return jwt;
     }
     async verifyData(jwt) {

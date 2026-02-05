@@ -1,7 +1,10 @@
 declare module 'express' {
   interface Request {
+    cookies: {
+      refresh_token: string;
+    };
     user: {
-      name: string;
+      name?: string;
       sub: number;
     };
   }

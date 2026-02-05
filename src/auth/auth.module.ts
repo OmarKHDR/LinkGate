@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UserModule } from 'src/user/user.module';
@@ -10,8 +11,7 @@ import { PrismaModule } from 'src/prisma/prisma.module';
     UserModule,
     JwtModule.register({
       global: true,
-      secret:
-        'helloworldis$2b$04$zetTTD.1R8OBkhNEtWcvB.irPtMjsQ.LPohtL0XSkr5eMl1ey0IcW',
+      secret: process.env.jwtSecret,
       signOptions: { expiresIn: '15m' },
     }),
     PrismaModule,
