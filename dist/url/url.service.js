@@ -28,6 +28,8 @@ let UrlService = class UrlService {
         return urls;
     }
     async getFullUrl(shortUrl, userId) {
+        console.log(userId);
+        console.log(shortUrl);
         const fullUrl = await this.prisma.url.findUnique({
             where: {
                 shortenedUrl: shortUrl,
@@ -35,13 +37,15 @@ let UrlService = class UrlService {
                     { access: client_1.UrlAccess.PUBLIC },
                     {
                         access: client_1.UrlAccess.PRIVATE,
-                        ownerId: userId,
+                        ownerId: userId ?? -1,
                     },
                     {
                         access: client_1.UrlAccess.GROUP,
                         group: {
                             members: {
-                                some: { id: userId },
+                                some: { id: userId ?? -1,
+                                    status: client_1.MemberStatus.ACCEPTED,
+                                },
                             },
                         },
                     },
@@ -52,17 +56,17 @@ let UrlService = class UrlService {
                 shortenedUrl: true,
                 fullUrl: true,
                 access: true,
-                ownerId: true,
                 groupId: true,
                 owner: {
                     select: {
+                        id: true,
                         name: true,
                     },
                 },
             },
         });
         if (!fullUrl)
-            throw new common_1.NotFoundException('url not found');
+            throw new common_1.NotFoundException('url not found or you are not authorized to access it');
         return fullUrl;
     }
     async getGroupUrls(groupId) {
@@ -75,6 +79,7 @@ let UrlService = class UrlService {
                 access: true,
                 owner: {
                     select: {
+                        id: true,
                         name: true,
                     },
                 },
@@ -110,6 +115,11 @@ let UrlService = class UrlService {
             }
         }
         throw new common_1.RequestTimeoutException('Failed to generate unique short url');
+    }
+    async deleteUrl(url) {
+        await this.prisma.url.delete({
+            where: { ...url },
+        });
     }
 };
 exports.UrlService = UrlService;

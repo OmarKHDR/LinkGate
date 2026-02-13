@@ -24,7 +24,7 @@ export class AuthGuard implements CanActivate {
     ]);
 
     if (isPublic) {
-      return true;
+      return this.validatePublicEndpoint(request);
     }
     return this.validateRequest(request);
   }
@@ -43,11 +43,33 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      const payload = await this.authService.verifyData(token);
+      const payload = await this.authService.verifyAccessToken(token);
       req.user = payload.payload;
       return true;
     } catch {
       throw new UnauthorizedException('Invalid or expired token');
+    }
+  }
+
+  async validatePublicEndpoint(req: Request): Promise<boolean> {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || typeof authHeader !== 'string') {
+      return true;
+    }
+
+    const [type, token] = authHeader.split(' ');
+
+    if (type !== 'Bearer' || !token) {
+      return true;
+    }
+
+    try {
+      const payload = await this.authService.verifyAccessToken(token);
+      req.user = payload.payload;
+      return true;
+    } catch {
+      return true;
     }
   }
 }

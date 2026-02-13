@@ -5,15 +5,17 @@ export declare class UserController {
     private userService;
     constructor(userService: UserService);
     getUser(req: Request): Promise<{
-        name: string;
-        id: number;
-        email: string;
-        password: string;
-    } | null>;
+        id: number | undefined;
+        name: string | undefined;
+        email: string | undefined;
+    }>;
     createUser(user: UserCreateDto): Promise<{
         id: number;
         name: string;
         email: string;
     }>;
-    deleteUser(): Promise<void>;
+    deleteUser(req: Request): Promise<{
+        success: boolean;
+        message: string;
+    }>;
 }

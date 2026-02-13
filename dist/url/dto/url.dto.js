@@ -9,67 +9,52 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UrlFullDataDto = exports.UrlMetaDto = exports.CreateUrlDto = void 0;
+exports.UrlDto = void 0;
 const class_validator_1 = require("class-validator");
 const client_1 = require("@prisma/client");
-class CreateUrlDto {
-    fullUrl;
-    access;
-    groupId;
-}
-exports.CreateUrlDto = CreateUrlDto;
-__decorate([
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], CreateUrlDto.prototype, "fullUrl", void 0);
-__decorate([
-    (0, class_validator_1.IsEnum)(client_1.UrlAccess),
-    __metadata("design:type", String)
-], CreateUrlDto.prototype, "access", void 0);
-__decorate([
-    (0, class_validator_1.IsOptional)(),
-    (0, class_validator_1.IsNumber)(),
-    __metadata("design:type", Number)
-], CreateUrlDto.prototype, "groupId", void 0);
-class UrlMetaDto {
-    shortenedUrl;
-    access;
-    owner;
-}
-exports.UrlMetaDto = UrlMetaDto;
-__decorate([
-    (0, class_validator_1.IsString)(),
-    __metadata("design:type", String)
-], UrlMetaDto.prototype, "shortenedUrl", void 0);
-class UrlFullDataDto {
+const swagger_1 = require("@nestjs/swagger");
+class UrlDto {
     id;
     groupId;
     fullUrl;
     shortenedUrl;
     access;
     ownerId;
-    owner;
 }
-exports.UrlFullDataDto = UrlFullDataDto;
+exports.UrlDto = UrlDto;
 __decorate([
+    (0, swagger_1.ApiProperty)({ example: 11 }),
     (0, class_validator_1.IsNumber)(),
     __metadata("design:type", Number)
-], UrlFullDataDto.prototype, "id", void 0);
+], UrlDto.prototype, "id", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({ example: 123 }),
     (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsNumber)(),
     __metadata("design:type", Object)
-], UrlFullDataDto.prototype, "groupId", void 0);
+], UrlDto.prototype, "groupId", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({
+        description: 'The full string url',
+        example: 'https://google.com',
+    }),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], UrlFullDataDto.prototype, "fullUrl", void 0);
+], UrlDto.prototype, "fullUrl", void 0);
 __decorate([
+    (0, swagger_1.ApiProperty)({ description: 'The shortend url path', example: 'twEGQC' }),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
-], UrlFullDataDto.prototype, "shortenedUrl", void 0);
+], UrlDto.prototype, "shortenedUrl", void 0);
 __decorate([
-    (0, class_validator_1.IsNumber)(),
+    (0, swagger_1.ApiProperty)({
+        description: 'Who can access the url: [PUBLIC, PRIVATE, GROUP]',
+        example: 'PUBLIC',
+    }),
+    __metadata("design:type", String)
+], UrlDto.prototype, "access", void 0);
+__decorate([
+    (0, swagger_1.ApiProperty)({ example: 11 }),
     __metadata("design:type", Number)
-], UrlFullDataDto.prototype, "ownerId", void 0);
+], UrlDto.prototype, "ownerId", void 0);
 //# sourceMappingURL=url.dto.js.map

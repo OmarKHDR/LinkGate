@@ -8,4 +8,5 @@ export declare class AuthGuard implements CanActivate {
     constructor(authService: AuthService, reflector: Reflector);
     canActivate(context: ExecutionContext): boolean | Promise<boolean>;
     validateRequest(req: Request): Promise<boolean>;
+    validatePublicEndpoint(req: Request): Promise<boolean>;
 }

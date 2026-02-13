@@ -35,8 +35,8 @@ model Url {
   shortenedUrl String    @unique
   access       UrlAccess @default(PUBLIC)
 
-  owner User   @relation(fields: [ownerId], references: [id])
-  group Group? @relation(fields: [groupId], references: [id])
+  owner User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  group Group? @relation(fields: [groupId], references: [id], onDelete: SetNull)
 
   ownerId Int
   groupId Int?
@@ -66,8 +66,8 @@ enum GroupRole {
 
 model GroupMembers {
   id     Int   @id @default(autoincrement())
-  group  Group @relation(fields: [groupId], references: [id])
-  member User  @relation(fields: [memberId], references: [id])
+  group  Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  member User  @relation(fields: [memberId], references: [id], onDelete: Cascade)
 
   groupId  Int
   memberId Int

@@ -1,13 +1,16 @@
-import { Injectable } from '@nestjs/common';
-import { Group, GroupRole, MemberStatus } from '@prisma/client';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Group, GroupRole, MemberStatus, Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateGroupDto } from './dto/create-group.dto';
+import { CreateGroupDto } from './dto/group.create.dto';
+import { GroupMemberDto } from './dto/group.member.dto';
 
 @Injectable()
 export class GroupService {
   constructor(private prisma: PrismaService) {}
 
-  async createGroup(groupData: CreateGroupDto): Promise<Group> {
+  async createGroup(
+    groupData: CreateGroupDto & { creatorId: number },
+  ): Promise<Group> {
     const group: Group = await this.prisma.group.create({
       data: {
         name: groupData.name,
@@ -63,19 +66,28 @@ export class GroupService {
     return pendingMembers;
   }
 
-  async acceptPendingRequests(groupId: number, userIds: number[]) {
-    await this.prisma.groupMembers.updateMany({
-      where: {
-        groupId,
-        memberId: {
-          in: userIds,
+  async acceptPendingRequests(
+    groupId: number,
+    userIds: number[],
+    adminId: number,
+  ) {
+    const user = await this.getGroupMembershipContext(groupId, adminId);
+    if (user?.role === GroupRole.ADMIN || user?.role === GroupRole.OWNER) {
+      return await this.prisma.groupMembers.updateMany({
+        where: {
+          groupId,
+          memberId: {
+            in: userIds,
+          },
+          status: MemberStatus.PENDING,
         },
-        status: MemberStatus.PENDING,
-      },
-      data: {
-        status: MemberStatus.ACCEPTED,
-      },
-    });
+        data: {
+          status: MemberStatus.ACCEPTED,
+        },
+      });
+    } else {
+      throw new UnauthorizedException('you must be admin to accept users');
+    }
   }
 
   async createJoinRequest(userId: number, groupId: number) {
@@ -88,7 +100,10 @@ export class GroupService {
     });
   }
 
-  async getGroupMembershipContext(groupId: number, userId: number) {
+  async getGroupMembershipContext(
+    groupId: number,
+    userId: number,
+  ): Promise<GroupMemberDto | null> {
     const member = await this.prisma.groupMembers.findUnique({
       where: {
         groupId_memberId: {
@@ -102,15 +117,18 @@ export class GroupService {
         member: {
           select: {
             name: true,
-          },
-        },
-        group: {
-          select: {
-            name: true,
+            id: true,
+            email: true,
           },
         },
       },
     });
     return member;
+  }
+
+  async deleteGroup(group: Prisma.GroupWhereUniqueInput) {
+    await this.prisma.group.delete({
+      where: { ...group },
+    });
   }
 }

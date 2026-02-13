@@ -17,6 +17,8 @@ const common_1 = require("@nestjs/common");
 const user_service_1 = require("./user.service");
 const user_create_dto_1 = require("./dto/user.create.dto");
 const public_decorator_1 = require("../shared/decorators/public.decorator");
+const swagger_1 = require("@nestjs/swagger");
+const user_response_dto_1 = require("./dto/user.response.dto");
 let UserController = class UserController {
     userService;
     constructor(userService) {
@@ -25,7 +27,12 @@ let UserController = class UserController {
     async getUser(req) {
         if (req.user) {
             console.log(req.user);
-            return await this.userService.getUser({ id: req.user.sub });
+            const user = await this.userService.getUser({ id: req.user.sub });
+            return {
+                id: user?.id,
+                name: user?.name,
+                email: user?.email,
+            };
         }
         else
             throw new common_1.UnauthorizedException();
@@ -33,17 +40,34 @@ let UserController = class UserController {
     async createUser(user) {
         return this.userService.createUser(user);
     }
-    async deleteUser() { }
+    async deleteUser(req) {
+        if (req.user) {
+            try {
+                await this.userService.deleteUser({ id: req.user.sub });
+                return { success: true, message: 'User deleted successfully' };
+            }
+            catch (error) {
+                throw new common_1.InternalServerErrorException('Failed to delete user');
+            }
+        }
+        else
+            throw new common_1.UnauthorizedException();
+    }
 };
 exports.UserController = UserController;
 __decorate([
-    (0, common_1.Get)(''),
+    (0, swagger_1.ApiOperation)({ summary: 'Retrieve the authenticated user' }),
+    (0, swagger_1.ApiOkResponse)({ type: user_response_dto_1.UserResDto }),
+    (0, common_1.Get)('/'),
     __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], UserController.prototype, "getUser", null);
 __decorate([
+    (0, swagger_1.ApiOperation)({ summary: 'Create a new user' }),
+    (0, swagger_1.ApiOkResponse)({ type: user_response_dto_1.UserResDto }),
+    (0, swagger_1.ApiBody)({ type: user_create_dto_1.UserCreateDto }),
     (0, public_decorator_1.Public)(),
     (0, common_1.Post)(''),
     __param(0, (0, common_1.Body)()),
@@ -52,9 +76,12 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], UserController.prototype, "createUser", null);
 __decorate([
-    (0, common_1.Delete)(''),
+    (0, swagger_1.ApiOperation)({ summary: 'Delete the authenticated user' }),
+    (0, swagger_1.ApiOkResponse)({ description: 'User deleted successfully' }),
+    (0, common_1.Delete)('/'),
+    __param(0, (0, common_1.Req)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
+    __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
 ], UserController.prototype, "deleteUser", null);
 exports.UserController = UserController = __decorate([

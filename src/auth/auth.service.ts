@@ -29,8 +29,8 @@ export class AuthService {
         sub: u.id,
       };
       return {
-        accessToken: await this.signData(accessPayload, '15m'),
-        refreshToken: await this.signData(refreshPayload, '1w'),
+        accessToken: await this.signAccessToken(accessPayload),
+        refreshToken: await this.signRefreshToken(refreshPayload),
       };
     } else throw new UnauthorizedException('Invalid credentials');
   }
@@ -43,8 +43,22 @@ export class AuthService {
       name: u.name,
     };
     return {
-      accessToken: await this.signData(accessPayload, '15m'),
+      accessToken: await this.signAccessToken(accessPayload),
     };
+  }
+
+  async signAccessToken(payload: AccessPayload) {
+    return this.jwtService.signAsync(payload, {
+      secret: process.env.JWT_ACCESS_SECRET,
+      expiresIn: '15m',
+    });
+  }
+
+  async signRefreshToken(payload: RefreshPayload) {
+    return this.jwtService.signAsync(payload, {
+      secret: process.env.JWT_REFRESH_SECRET,
+      expiresIn: '7d',
+    });
   }
 
   async signData(
@@ -62,5 +76,17 @@ export class AuthService {
 
   async verifyData(jwt: string) {
     return await this.jwtService.verifyAsync<Jwt>(jwt);
+  }
+
+  async verifyAccessToken(token: string) {
+    return this.jwtService.verifyAsync<Jwt>(token, {
+      secret: process.env.JWT_ACCESS_SECRET,
+    });
+  }
+
+  async verifyRefreshToken(token: string) {
+    return this.jwtService.verifyAsync<Jwt>(token, {
+      secret: process.env.JWT_REFRESH_SECRET,
+    });
   }
 }

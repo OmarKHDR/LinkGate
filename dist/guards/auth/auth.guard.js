@@ -28,7 +28,7 @@ let AuthGuard = class AuthGuard {
             context.getClass(),
         ]);
         if (isPublic) {
-            return true;
+            return this.validatePublicEndpoint(request);
         }
         return this.validateRequest(request);
     }
@@ -48,6 +48,24 @@ let AuthGuard = class AuthGuard {
         }
         catch {
             throw new common_1.UnauthorizedException('Invalid or expired token');
+        }
+    }
+    async validatePublicEndpoint(req) {
+        const authHeader = req.headers.authorization;
+        if (!authHeader || typeof authHeader !== 'string') {
+            return true;
+        }
+        const [type, token] = authHeader.split(' ');
+        if (type !== 'Bearer' || !token) {
+            return true;
+        }
+        try {
+            const payload = await this.authService.verifyData(token);
+            req.user = payload.payload;
+            return true;
+        }
+        catch {
+            return true;
         }
     }
 };

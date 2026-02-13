@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
   Body,
   Controller,
@@ -11,11 +12,19 @@ import { AuthService } from './auth.service';
 import { UserAuthDto } from 'src/user/dto/user.auth.dto';
 import { Public } from 'src/shared/decorators/public.decorator';
 import type { Response, Request } from 'express';
+import { ApiBody, ApiOkResponse, ApiOperation } from '@nestjs/swagger';
+import { AccessTokenDto } from './dto/access.dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @ApiOperation({ summary: 'Login a user' })
+  @ApiBody({ type: UserAuthDto })
+  @ApiOkResponse({
+    type: AccessTokenDto,
+    description: 'The access token for the user',
+  })
   @Public()
   @Post('login')
   async login(
@@ -35,6 +44,10 @@ export class AuthController {
     };
   }
 
+  @ApiOkResponse({
+    type: AccessTokenDto,
+    description: 'The access token for the user',
+  })
   @Public()
   @Get('refresh')
   async refresh(@Req() req: Request) {
@@ -44,7 +57,7 @@ export class AuthController {
       throw new UnauthorizedException();
     }
 
-    const payload = await this.authService.verifyData(refreshToken);
+    const payload = await this.authService.verifyRefreshToken(refreshToken);
     console.log(payload);
     const userId = payload.payload.sub;
     if (!userId) throw new UnauthorizedException();

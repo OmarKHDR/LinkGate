@@ -5,9 +5,11 @@ import {
   RequestTimeoutException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Url, UrlAccess, Prisma } from '@prisma/client';
+import { Url, UrlAccess, Prisma, MemberStatus } from '@prisma/client';
 import { generateShortId } from 'src/utils/shortener';
-import { UrlMetaDto, CreateUrlDto, UrlFullDataDto } from './dto/url.dto';
+import { UrlFullDataDto } from './dto/fullurl.dto';
+import { CreateUrlDto } from './dto/url.create.dto';
+import { UrlMetaDto } from './dto/url.data.dto';
 
 @Injectable()
 export class UrlService {
@@ -23,6 +25,8 @@ export class UrlService {
   }
 
   async getFullUrl(shortUrl: string, userId: number): Promise<UrlFullDataDto> {
+    console.log(userId);
+    console.log(shortUrl);
     const fullUrl = await this.prisma.url.findUnique({
       where: {
         shortenedUrl: shortUrl,
@@ -30,13 +34,13 @@ export class UrlService {
           { access: UrlAccess.PUBLIC },
           {
             access: UrlAccess.PRIVATE,
-            ownerId: userId,
+            ownerId: userId ?? -1,
           },
           {
             access: UrlAccess.GROUP,
             group: {
               members: {
-                some: { id: userId },
+                some: { id: userId ?? -1, status: MemberStatus.ACCEPTED },
               },
             },
           },
@@ -47,16 +51,19 @@ export class UrlService {
         shortenedUrl: true,
         fullUrl: true,
         access: true,
-        ownerId: true,
         groupId: true,
         owner: {
           select: {
+            id: true,
             name: true,
           },
         },
       },
     });
-    if (!fullUrl) throw new NotFoundException('url not found');
+    if (!fullUrl)
+      throw new NotFoundException(
+        'url not found or you are not authorized to access it',
+      );
     return fullUrl;
   }
 
@@ -70,6 +77,7 @@ export class UrlService {
         access: true,
         owner: {
           select: {
+            id: true,
             name: true,
           },
         },
@@ -104,5 +112,11 @@ export class UrlService {
       }
     }
     throw new RequestTimeoutException('Failed to generate unique short url');
+  }
+
+  async deleteUrl(url: Prisma.UrlWhereUniqueInput) {
+    await this.prisma.url.delete({
+      where: { ...url },
+    });
   }
 }

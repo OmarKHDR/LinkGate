@@ -15,8 +15,8 @@ export declare class UserService {
         id: number;
         email: string;
         groups: {
-            role: import("@prisma/client").$Enums.GroupRole;
             status: import("@prisma/client").$Enums.MemberStatus;
+            role: import("@prisma/client").$Enums.GroupRole;
         }[];
     }[]>;
     createUser(user: Prisma.UserCreateInput): Promise<{

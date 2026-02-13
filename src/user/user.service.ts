@@ -5,9 +5,7 @@ import { hashPassword, verifyPassword } from 'src/utils/hashing';
 
 @Injectable()
 export class UserService {
-  constructor(
-    private prisma: PrismaService,
-  ) {
+  constructor(private prisma: PrismaService) {
     if (!prisma.user) {
       throw new Error('PrismaService not properly initialized');
     }

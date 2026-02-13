@@ -65,19 +65,25 @@ let GroupService = class GroupService {
         });
         return pendingMembers;
     }
-    async acceptPendingRequests(groupId, userIds) {
-        await this.prisma.groupMembers.updateMany({
-            where: {
-                groupId,
-                memberId: {
-                    in: userIds,
+    async acceptPendingRequests(groupId, userIds, adminId) {
+        const user = await this.getGroupMembershipContext(groupId, adminId);
+        if (user?.role === client_1.GroupRole.ADMIN || user?.role === client_1.GroupRole.OWNER) {
+            return await this.prisma.groupMembers.updateMany({
+                where: {
+                    groupId,
+                    memberId: {
+                        in: userIds,
+                    },
+                    status: client_1.MemberStatus.PENDING,
                 },
-                status: client_1.MemberStatus.PENDING,
-            },
-            data: {
-                status: client_1.MemberStatus.ACCEPTED,
-            },
-        });
+                data: {
+                    status: client_1.MemberStatus.ACCEPTED,
+                },
+            });
+        }
+        else {
+            throw new common_1.UnauthorizedException("you must be admin to accept users");
+        }
     }
     async createJoinRequest(userId, groupId) {
         await this.prisma.groupMembers.create({
@@ -102,16 +108,18 @@ let GroupService = class GroupService {
                 member: {
                     select: {
                         name: true,
-                    },
-                },
-                group: {
-                    select: {
-                        name: true,
+                        id: true,
+                        email: true,
                     },
                 },
             },
         });
         return member;
+    }
+    async deleteGroup(group) {
+        await this.prisma.group.delete({
+            where: { ...group },
+        });
     }
 };
 exports.GroupService = GroupService;

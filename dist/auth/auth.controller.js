@@ -17,6 +17,8 @@ const common_1 = require("@nestjs/common");
 const auth_service_1 = require("./auth.service");
 const user_auth_dto_1 = require("../user/dto/user.auth.dto");
 const public_decorator_1 = require("../shared/decorators/public.decorator");
+const swagger_1 = require("@nestjs/swagger");
+const access_dto_1 = require("./dto/access.dto");
 let AuthController = class AuthController {
     authService;
     constructor(authService) {
@@ -53,6 +55,9 @@ let AuthController = class AuthController {
 };
 exports.AuthController = AuthController;
 __decorate([
+    (0, swagger_1.ApiOperation)({ summary: 'Login a user' }),
+    (0, swagger_1.ApiBody)({ type: user_auth_dto_1.UserAuthDto }),
+    (0, swagger_1.ApiOkResponse)({ type: access_dto_1.AccessTokenDto, description: 'The access token for the user' }),
     (0, public_decorator_1.Public)(),
     (0, common_1.Post)('login'),
     __param(0, (0, common_1.Body)()),
@@ -62,6 +67,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], AuthController.prototype, "login", null);
 __decorate([
+    (0, swagger_1.ApiOkResponse)({ type: access_dto_1.AccessTokenDto, description: 'The access token for the user' }),
     (0, public_decorator_1.Public)(),
     (0, common_1.Get)('refresh'),
     __param(0, (0, common_1.Req)()),
